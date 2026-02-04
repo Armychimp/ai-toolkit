@@ -454,6 +454,73 @@ export default function SimpleJob({
           </Card>
         </div>
         <div>
+          <Card title="Notifications" collapsible>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <Checkbox
+                  label="Enable ntfy Push Notifications"
+                  checked={jobConfig.config.process[0].notifications?.enabled || false}
+                  onChange={value => setJobConfig(value, 'config.process[0].notifications.enabled')}
+                />
+              </div>
+              {jobConfig.config.process[0].notifications?.enabled && (
+                <>
+                  <div>
+                    <TextInput
+                      label="ntfy Server URL"
+                      value={jobConfig.config.process[0].notifications?.server_url || 'https://ntfy.sh'}
+                      onChange={value => setJobConfig(value, 'config.process[0].notifications.server_url')}
+                      placeholder="https://ntfy.sh"
+                    />
+                  </div>
+                  <div>
+                    <TextInput
+                      label="ntfy Topic"
+                      value={jobConfig.config.process[0].notifications?.topic || ''}
+                      onChange={value => setJobConfig(value, 'config.process[0].notifications.topic')}
+                      placeholder="my-training-updates"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+            {jobConfig.config.process[0].notifications?.enabled && (
+              <div className="mt-4">
+                <FormGroup label="Notify On">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                    <Checkbox
+                      label="Training Start"
+                      checked={jobConfig.config.process[0].notifications?.on_training_start ?? true}
+                      onChange={value => setJobConfig(value, 'config.process[0].notifications.on_training_start')}
+                    />
+                    <Checkbox
+                      label="Sample Generated"
+                      checked={jobConfig.config.process[0].notifications?.on_sample_generated ?? false}
+                      onChange={value => setJobConfig(value, 'config.process[0].notifications.on_sample_generated')}
+                    />
+                    <Checkbox
+                      label="Checkpoint Saved"
+                      checked={jobConfig.config.process[0].notifications?.on_checkpoint_saved ?? true}
+                      onChange={value => setJobConfig(value, 'config.process[0].notifications.on_checkpoint_saved')}
+                    />
+                    <Checkbox
+                      label="Training Complete"
+                      checked={jobConfig.config.process[0].notifications?.on_training_complete ?? true}
+                      onChange={value => setJobConfig(value, 'config.process[0].notifications.on_training_complete')}
+                    />
+                    <Checkbox
+                      label="Error"
+                      checked={jobConfig.config.process[0].notifications?.on_error ?? true}
+                      onChange={value => setJobConfig(value, 'config.process[0].notifications.on_error')}
+                    />
+                  </div>
+                </FormGroup>
+              </div>
+            )}
+          </Card>
+        </div>
+        <div>
           <Card title="Training">
             <div className={trainingBarClass}>
               <div>

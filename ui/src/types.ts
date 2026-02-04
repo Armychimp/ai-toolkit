@@ -207,6 +207,18 @@ export interface LoggingConfig {
   use_ui_logger: boolean;
 }
 
+export interface NotificationConfig {
+  enabled: boolean;
+  server_url: string;
+  topic: string;
+  on_training_start: boolean;
+  on_sample_generated: boolean;
+  on_checkpoint_saved: boolean;
+  on_training_complete: boolean;
+  on_error: boolean;
+  priority?: string;
+}
+
 export interface SliderConfig {
   guidance_strength?: number;
   anchor_strength?: number;
@@ -231,6 +243,7 @@ export interface ProcessConfig {
   logging: LoggingConfig;
   model: ModelConfig;
   sample: SampleConfig;
+  notifications?: NotificationConfig;
 }
 
 export interface ConfigObject {

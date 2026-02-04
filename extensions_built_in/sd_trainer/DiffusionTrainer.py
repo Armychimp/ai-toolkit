@@ -228,6 +228,10 @@ class DiffusionTrainer(SDTrainer):
             self._async_tasks.clear()
 
     def on_error(self, e: Exception):
+        # Send error notification before other handling
+        if hasattr(self, 'notifier') and self.accelerator.is_main_process:
+            self.notifier.notify_error(e, step=getattr(self, 'step_num', None))
+
         super(DiffusionTrainer, self).on_error(e)
         if self.is_ui_trainer:
             if self.accelerator.is_main_process and not self.is_stopping:
