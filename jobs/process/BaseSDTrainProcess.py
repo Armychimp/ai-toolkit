@@ -72,6 +72,7 @@ import hashlib
 
 from toolkit.util.blended_blur_noise import get_blended_blur_noise
 from toolkit.util.get_model import get_model_class
+from toolkit.notifications import create_notifier
 
 def flush():
     torch.cuda.empty_cache()
@@ -128,6 +129,11 @@ class BaseSDTrainProcess(BaseTrainProcess):
             self.first_sample_config = self.sample_config
         self.logging_config = LoggingConfig(**self.get_conf('logging', {}))
         self.logger = create_logger(self.logging_config, config, self.save_root)
+
+        # Initialize notifications
+        notification_config = self.get_conf('notifications', None)
+        self.notifier = create_notifier(notification_config, self.job.name)
+
         self.optimizer: torch.optim.Optimizer = None
         self.lr_scheduler = None
         self.data_loader: Union[DataLoader, None] = None
@@ -374,6 +380,10 @@ class BaseSDTrainProcess(BaseTrainProcess):
         if self.ema is not None:
             self.ema.train()
 
+        # Send sample generated notification
+        if step is not None:
+            self.notifier.notify_sample_generated(step, self.train_config.steps)
+
     def update_training_metadata(self):
         o_dict = OrderedDict({
             "training_info": self.get_training_info()
@@ -482,11 +492,15 @@ class BaseSDTrainProcess(BaseTrainProcess):
         return latest_item
 
     def post_save_hook(self, save_path):
-        # override in subclass
-        pass
-    
+        # Send checkpoint saved notification
+        if self.accelerator.is_main_process:
+            self.notifier.notify_checkpoint_saved(self.step_num, save_path)
+
     def done_hook(self):
-        pass
+        # Send training complete notification and shutdown notifier
+        if self.accelerator.is_main_process:
+            self.notifier.notify_training_complete(self.step_num, self.save_root)
+            self.notifier.shutdown(wait=True)
     
     def end_step_hook(self):
         pass
@@ -703,6 +717,7 @@ class BaseSDTrainProcess(BaseTrainProcess):
     def hook_before_train_loop(self):
         if self.accelerator.is_main_process:
             self.logger.start()
+            self.notifier.notify_training_start(self.train_config.steps, self.model_config.name_or_path)
         self.prepare_accelerator()
         
     def sample_step_hook(self, img_num, total_imgs):

@@ -1,4 +1,4 @@
-import { JobConfig, DatasetConfig, SliderConfig } from '@/types';
+import { JobConfig, DatasetConfig, SliderConfig, NotificationConfig } from '@/types';
 
 export const defaultDatasetConfig: DatasetConfig = {
   folder_path: '/path/to/images/folder',
@@ -26,6 +26,17 @@ export const defaultSliderConfig: SliderConfig = {
   negative_prompt: 'person who is sad',
   target_class: 'person',
   anchor_class: '',
+};
+
+export const defaultNotificationConfig: NotificationConfig = {
+  enabled: false,
+  server_url: 'https://ntfy.sh',
+  topic: '',
+  on_training_start: true,
+  on_sample_generated: false,
+  on_checkpoint_saved: true,
+  on_training_complete: true,
+  on_error: true,
 };
 
 export const defaultJobConfig: JobConfig = {
@@ -199,5 +210,11 @@ export const migrateJobConfig = (jobConfig: JobConfig): JobConfig => {
       use_ui_logger: true,
     };
   }
+
+  // Add notifications config if missing
+  if (!('notifications' in jobConfig.config.process[0])) {
+    jobConfig.config.process[0].notifications = { ...defaultNotificationConfig };
+  }
+
   return jobConfig;
 };
