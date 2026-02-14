@@ -51,18 +51,11 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # install pytorch before cache bust to avoid redownloading pytorch
 RUN pip install --no-cache-dir torch==2.9.1 torchvision==0.24.1 torchaudio==2.9.1 --index-url https://download.pytorch.org/whl/cu128 --break-system-packages
 
-# Fix cache busting by moving CACHEBUST to right before git clone
-ARG CACHEBUST=1234
-ARG GIT_COMMIT=main
-RUN echo "Cache bust: ${CACHEBUST}" && \
-    git clone https://github.com/ostris/ai-toolkit.git && \
-    cd ai-toolkit && \
-    git checkout ${GIT_COMMIT}
+# Copy local repo instead of cloning from upstream
+# This ensures all local customizations are included
+COPY . /app/ai-toolkit
 
 WORKDIR /app/ai-toolkit
-
-# copy requirements.txt to leverage docker cache
-COPY requirements.txt /app/ai-toolkit/requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --break-system-packages -r requirements.txt && \
